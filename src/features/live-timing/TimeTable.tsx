@@ -6,23 +6,26 @@ import { columns, liveTimingData } from "./Columns"
 import { DataTable } from "@/components/DataTable"
 import { SelectDriverDropdown } from "./SelectDriverDropdown"
 import { useState } from "react"
+import { fetchLiveTimingData, getLapTimesByDriver } from "./api/getLapTimes"
 
 export const fetchData = async (driver: string): Promise<liveTimingData[]> => {
   const supabase = createClient()
-  const { data, error } = await supabase
-    .from("laptimes")
-    .select(
-      `
+
+  let query = supabase.from("laptimes").select(
+    `
       lapTimeMs: lap_time_ms,
-      cars (
-        carName: car_name,
+      recordedAt: recorded_at,
+      cars!inner (
         driverName: driver_name
       )
     `
-    )
-    .eq("cars.driver_name", driver)
-    .order("lap_time_ms", { ascending: true })
-    .limit(10)
+  )
+
+  if (driver !== "All") {
+    query = query.eq("cars.driver_name", driver)
+  }
+
+  const { data, error } = await query.limit(10)
 
   if (error) {
     throw new Error(error.message)
@@ -30,7 +33,7 @@ export const fetchData = async (driver: string): Promise<liveTimingData[]> => {
 
   const flattenedData = data.map((lap: any) => ({
     lapTimeMs: lap.lapTimeMs,
-    time: lap.cars.driverName,
+    recordedAt: lap.recordedAt,
   }))
 
   return flattenedData
@@ -41,7 +44,7 @@ type TimeTableProps = {
 }
 
 export default function TimeTable({ drivers }: TimeTableProps) {
-  const [selectedDriver, setSelectedDriver] = useState(drivers[0])
+  const [selectedDriver, setSelectedDriver] = useState("All")
 
   const {
     data: data,
@@ -49,20 +52,23 @@ export default function TimeTable({ drivers }: TimeTableProps) {
     isError,
     error,
   } = useQuery<liveTimingData[]>({
-    queryKey: ["laptimes", "liveTiming"],
+    queryKey: ["laptimes", "liveTiming", selectedDriver],
     queryFn: () => fetchData(selectedDriver),
   })
 
   if (isLoading) return <span>Loading...</span>
   if (isError) return <span>Error: {(error as Error).message}</span>
 
+  console.log("data", data)
+  console.log("selectedDriver", selectedDriver)
+
   return (
     <>
       <h1 className="flex text-3xl font-bold mb-4 justify-center mt-10">
-        Live-timing
+        Live-timing for {selectedDriver}
       </h1>
       <SelectDriverDropdown
-        drivers={drivers}
+        drivers={["All", ...drivers]}
         selectedDriver={selectedDriver}
         setSelectedDriver={setSelectedDriver}
       />

@@ -27,8 +27,8 @@ export const fetchLeaderboard = async (): Promise<LapTime[]> => {
 
   const flattenedData = data.map((lap: any) => ({
     lapTimeMs: lap.lapTimeMs,
-    carName: lap.cars.carName,
-    driverName: lap.cars.driverName,
+    carName: lap.cars?.carName ?? "N/A",
+    driverName: lap.cars?.driverName ?? "Unknown Driver",
   }))
 
   return flattenedData

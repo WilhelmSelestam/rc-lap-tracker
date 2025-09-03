@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table"
 
 export type liveTimingData = {
   lapTimeMs: number
-  time: string
+  recordedAt: string
 }
 
 export const columns: ColumnDef<liveTimingData>[] = [
