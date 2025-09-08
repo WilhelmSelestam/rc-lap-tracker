@@ -7,6 +7,8 @@ import { DataTable } from "@/components/DataTable"
 import { SelectDriverDropdown } from "./SelectDriverDropdown"
 import { useState } from "react"
 import { fetchLiveTimingData, getLapTimesByDriver } from "./api/getLapTimes"
+import { Select } from "@radix-ui/react-select"
+import { OptionSelector } from "./SelectOption"
 
 export const fetchData = async (driver: string): Promise<liveTimingData[]> => {
   const supabase = createClient()
@@ -59,20 +61,21 @@ export default function TimeTable({ drivers }: TimeTableProps) {
   if (isLoading) return <span>Loading...</span>
   if (isError) return <span>Error: {(error as Error).message}</span>
 
-  console.log("data", data)
-  console.log("selectedDriver", selectedDriver)
+  // console.log("data", data)
+  // console.log("selectedDriver", selectedDriver)
 
   return (
     <>
       <h1 className="flex text-3xl font-bold mb-4 justify-center mt-10">
         Live-timing for {selectedDriver}
       </h1>
-      <SelectDriverDropdown
-        drivers={["All", ...drivers]}
-        selectedDriver={selectedDriver}
-        setSelectedDriver={setSelectedDriver}
+      <OptionSelector
+        label="Driver"
+        options={["All", ...drivers]}
+        selectedOption={selectedDriver}
+        setSelectedOption={setSelectedDriver}
       />
-      <div className="container mx-auto py-10 max-w-8/9">
+      <div className="my-5">
         <DataTable columns={columns} data={data ?? []} />
       </div>
     </>

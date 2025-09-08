@@ -1,4 +1,4 @@
-"use client" // This is a client component
+"use client"
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
