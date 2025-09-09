@@ -82,11 +82,6 @@ export default function Leaderboard({ drivers }: LeaderboardProps) {
   if (carsDataError)
     return <span>Error: {(carsDataError as Error).message}</span>
 
-  // console.log("carsData", carsData)
-  // console.log("leaderboardData", leaderboardData)
-  // console.log("selectedDriver", selectedDriver)
-  // console.log("selectedCar", selectedCar)
-
   return (
     <>
       <h1 className="flex text-3xl font-bold mb-4 justify-center mt-10">

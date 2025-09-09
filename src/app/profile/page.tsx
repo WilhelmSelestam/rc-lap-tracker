@@ -25,8 +25,6 @@ export default async function ProfilePage() {
     // console.error("Error fetching cars:", error)
   }
 
-  console.log("Fetched cars:", cars)
-
   return (
     <div className="container mx-auto p-4">
       <div className="flex items-center space-x-4 mb-8">

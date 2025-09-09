@@ -11,9 +11,6 @@ export async function updateCarName(carId: number, newName: string) {
     .update({ car_name: newName })
     .eq("id", carId)
 
-  console.log("Update response data:", data)
-  console.log("Update response error:", error)
-
   if (error) {
     console.error("Error updating car name:", error)
     return { error }

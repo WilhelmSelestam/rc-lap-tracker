@@ -61,9 +61,6 @@ export default function TimeTable({ drivers }: TimeTableProps) {
   if (isLoading) return <span>Loading...</span>
   if (isError) return <span>Error: {(error as Error).message}</span>
 
-  // console.log("data", data)
-  // console.log("selectedDriver", selectedDriver)
-
   return (
     <>
       <h1 className="flex text-3xl font-bold mb-4 justify-center mt-10">
