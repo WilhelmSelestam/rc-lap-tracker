@@ -1,9 +1,9 @@
 import { createClient } from "../../../../utils/supabase/client"
-import { liveTimingData } from "../Columns"
+import { liveTimingTableData } from "../Columns"
 
 export async function getLapTimesByDriver(
   driverName: string
-): Promise<liveTimingData[]> {
+): Promise<liveTimingTableData[]> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from("laptimes")
@@ -27,12 +27,13 @@ export async function getLapTimesByDriver(
   const flattenedData = data.map((lap: any) => ({
     lapTimeMs: lap.lapTimeMs,
     recordedAt: lap.recordedAt,
+    carId: lap.cars.carName,
   }))
 
   return flattenedData
 }
 
-export const fetchLiveTimingData = async (): Promise<liveTimingData[]> => {
+export const fetchLiveTimingData = async (): Promise<liveTimingTableData[]> => {
   const supabase = createClient()
   const { data, error } = await supabase
     .from("laptimes")
@@ -55,6 +56,7 @@ export const fetchLiveTimingData = async (): Promise<liveTimingData[]> => {
   const flattenedData = data.map((lap: any) => ({
     lapTimeMs: lap.lapTimeMs,
     recordedAt: lap.cars.driverName,
+    carId: lap.cars.carName,
   }))
 
   return flattenedData
