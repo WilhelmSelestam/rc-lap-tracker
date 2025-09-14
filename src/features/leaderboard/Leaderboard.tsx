@@ -6,7 +6,7 @@ import { columns, LapTime } from "./Columns"
 import { DataTable } from "@/components/DataTable"
 import { OptionSelector } from "../live-timing/SelectOption"
 import { useState } from "react"
-import { getCars } from "./api/getCars"
+import { CarInfo, getCars } from "./api/getCars"
 
 export const fetchLeaderboard = async (
   driverName: string,
@@ -70,7 +70,7 @@ export default function Leaderboard({ drivers }: LeaderboardProps) {
     data: carsData,
     isLoading: isCarsDataLoading,
     error: carsDataError,
-  } = useQuery<string[]>({
+  } = useQuery<CarInfo[]>({
     queryKey: ["cars", "leaderboard", selectedDriver],
     queryFn: () => getCars(selectedDriver),
   })
@@ -96,7 +96,10 @@ export default function Leaderboard({ drivers }: LeaderboardProps) {
         />
         <OptionSelector
           label="Car"
-          options={["All", ...(carsData ?? [])]}
+          options={[
+            "All",
+            ...(carsData ? carsData.map((car) => car.car_name) : []),
+          ]}
           selectedOption={selectedCar}
           setSelectedOption={setSelectedCar}
         />

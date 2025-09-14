@@ -13,10 +13,10 @@ export const columns: ColumnDef<LapTime>[] = [
     accessorKey: "lapTimeMs",
     header: "Lap Time (ms)",
   },
-  {
-    accessorKey: "carName",
-    header: "Car Name",
-  },
+  // {
+  //   accessorKey: "carName",
+  //   header: "Car Name",
+  // },
   {
     accessorKey: "driverName",
     header: "Driver Name",

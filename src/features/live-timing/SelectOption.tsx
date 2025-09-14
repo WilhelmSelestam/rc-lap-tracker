@@ -26,7 +26,7 @@ export function OptionSelector({
   return (
     <>
       <div className="flex flex-col">
-        <h1>Select: {label}</h1>
+        <h1>{label}</h1>
         <Select onValueChange={setSelectedOption} value={selectedOption}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select a driver" />

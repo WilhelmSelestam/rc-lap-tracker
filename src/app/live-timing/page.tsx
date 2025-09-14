@@ -5,8 +5,11 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query"
-import TimeTable, { fetchData } from "@/features/live-timing/TimeTable"
+import LiveTimingLapTable, {
+  fetchData,
+} from "@/features/live-timing/LiveTimingLapTable"
 import { getDrivers } from "@/features/live-timing/api/getDrivers"
+import { createClient } from "../../../utils/supabase/server"
 
 export default async function LiveTimingPage() {
   const queryClient = new QueryClient()
@@ -19,9 +22,22 @@ export default async function LiveTimingPage() {
   //   queryFn: () => fetchData(drivers[0]),
   // })
 
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return <div>You are not signed in.</div>
+  }
+
   return (
     // <HydrationBoundary state={dehydrate(queryClient)}>
-    <TimeTable drivers={drivers} />
+    <LiveTimingLapTable
+      drivers={drivers}
+      userName={user?.user_metadata?.name}
+    />
     // </HydrationBoundary>
   )
 }

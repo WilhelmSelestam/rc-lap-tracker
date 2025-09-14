@@ -34,29 +34,6 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
   })
 
-  const supabase = createClient()
-  const [laps, setLaps] = useState(data)
-
-  useEffect(() => {
-    const channel = supabase
-      .channel("public:laptimes")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "laptimes" },
-        (payload) => {
-          setLaps((prevLaps) =>
-            [payload.new as TData, ...prevLaps].slice(0, 10)
-          )
-        }
-      )
-      .subscribe()
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [supabase, laps, setLaps])
-
-  console.log("New lap time received:", laps)
-
   return (
     <div className="overflow-hidden rounded-md border">
       <Table>

@@ -1,8 +1,14 @@
 import { createClient } from "../../../../utils/supabase/client"
 
-export async function getCars(driverName: string): Promise<string[]> {
+export type CarInfo = {
+  car_name: string
+  driver_name: string
+  id: number
+}
+
+export async function getCars(driverName: string): Promise<CarInfo[]> {
   const supabase = createClient()
-  let query = supabase.from("cars").select(`car_name, driver_name`)
+  let query = supabase.from("cars").select(`car_name, driver_name, id`)
 
   if (driverName !== "All") {
     query = query.eq("driver_name", driverName)
@@ -14,5 +20,9 @@ export async function getCars(driverName: string): Promise<string[]> {
     throw new Error(error.message)
   }
 
-  return data.map((item: any) => item.car_name)
+  return data.map((car) => ({
+    car_name: car.car_name,
+    driver_name: car.driver_name,
+    id: car.id,
+  }))
 }
