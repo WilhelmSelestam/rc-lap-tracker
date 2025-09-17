@@ -3,7 +3,7 @@ import time
 
 # --- INSTÄLLNINGAR ---
 # Dessa måste matcha inställningarna för enheten du ansluter till!
-PORT_NAME = 'COM6'
+PORT_NAME = 'COM4'
 BAUD_RATE = 9600  # Ändra till din enhets hastighet (t.ex. 115200)
 # ---------------------
 
