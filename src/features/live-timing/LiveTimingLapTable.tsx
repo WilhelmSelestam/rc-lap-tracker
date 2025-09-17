@@ -83,8 +83,6 @@ export default function LiveTimingLapTable({
 
   const carIds = carsData ? carsData.map((car) => car.id) : []
 
-  // console.log("Car IDs for selected driver:", carIds)
-
   useEffect(() => {
     const channel = supabase
       .channel("public:laptimes")
@@ -107,7 +105,6 @@ export default function LiveTimingLapTable({
             recordedAt: rawNewLap.recorded_at,
             carId: rawNewLap.car_id,
           }
-          console.log("New lap received:", newLap)
           setLaps((prevLaps) => [newLap, ...(prevLaps || [])].slice(0, 50))
         }
       )
@@ -117,19 +114,11 @@ export default function LiveTimingLapTable({
     }
   }, [supabase, laps, setLaps])
 
-  console.log("Laps data:", laps)
-
   if (isLoading || isCarsDataLoading) return <span>Loading...</span>
   if (isError) return <span>Error: {(error as Error).message}</span>
   if (carsDataError) {
     return <span>Error loading cars: {(carsDataError as Error).message}</span>
   }
-
-  const liveTimingData = laps.map((lap) => {
-    return new Date(lap.recordedAt).toTimeString()
-  })
-
-  console.log("Live Timing Data:", liveTimingData)
 
   return (
     <>

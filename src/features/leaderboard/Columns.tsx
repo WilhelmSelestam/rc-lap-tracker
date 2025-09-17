@@ -19,6 +19,6 @@ export const columns: ColumnDef<LapTime>[] = [
   // },
   {
     accessorKey: "driverName",
-    header: "Driver Name",
+    header: "Driver",
   },
 ]

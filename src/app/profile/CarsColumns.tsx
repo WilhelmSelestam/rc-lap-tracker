@@ -27,7 +27,7 @@ const EditCarForm = ({ car, onClose }: { car: Car; onClose: () => void }) => {
 
   const handleUpdate = async () => {
     await updateCarName(car.id, name)
-    onClose() // Call the passed-in function to close the dialog
+    onClose()
   }
 
   return (
@@ -65,18 +65,20 @@ const ActionsCell = ({ car }: { car: Car }) => {
         </DropdownMenuContent>
       </DropdownMenu>
       <DialogContent>
-        {/* Use the new form component here */}
         <EditCarForm car={car} onClose={() => setIsDialogOpen(false)} />
       </DialogContent>
     </Dialog>
   )
 }
 
-// The columns definition is now simpler
 export const columns: ColumnDef<Car>[] = [
   {
     accessorKey: "car_name",
     header: "Name",
+  },
+  {
+    accessorKey: "car_model",
+    header: "Model",
   },
   {
     id: "actions",
