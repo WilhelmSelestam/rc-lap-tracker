@@ -1,17 +1,30 @@
 import serial
+import os
 import time
+import sys
+from supabase import create_client, Client
+from dotenv import load_dotenv
 
-# --- INSTÄLLNINGAR ---
-# Dessa måste matcha inställningarna för enheten du ansluter till!
+load_dotenv()
+
+SUPABASE_URL = os.getenv('NEXT_PUBLIC_SUPABASE_URL')
+SUPABASE_SERVICE_KEY = os.getenv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY')
 PORT_NAME = 'COM4'
-BAUD_RATE = 9600  # Ändra till din enhets hastighet (t.ex. 115200)
-# ---------------------
+BAUD_RATE = 9600
 
-ser = None  # Definiera variabeln utanför try-blocket
 
 try:
-    # Konfigurera och öppna anslutningen till COM-porten
-    # timeout=1 gör att ser.readline() väntar i max 1 sekund på data.
+    supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+    print("Supabase client initialized.")
+        
+except Exception as e:
+    print(f"ERROR: Could not initialize Supabase client: {e}")
+    sys.exit(1)
+
+
+
+ser = None
+try:
     ser = serial.Serial(
         port=PORT_NAME,
         baudrate=BAUD_RATE,
@@ -23,21 +36,46 @@ try:
     print(f"[*] Lyssnar på port {PORT_NAME} med hastighet {BAUD_RATE}...")
 
     while True:
-        # Kontrollera om det finns data i in-bufferten
         if ser.in_waiting > 0:
-            # Läs en hel rad (avslutas med ett nyradstecken \n)
             line = ser.readline()
 
-            # Data tas emot som bytes, så vi måste avkoda den till en sträng.
-            # 'errors="ignore"' förhindrar krasch om en ogiltig byte tas emot.
-            decoded_line = line.decode('utf-8', errors='ignore').strip()
+            decoded_line = line.decode('utf-8', errors='ignore').strip().split(';')
 
-            print(f"{decoded_line}")
+            print(decoded_line)
             
-            with open("output.txt", "a") as f:
-                f.write(f"{decoded_line}\n")
+            # with open("output.txt", "a") as f:
+            #     f.write(f"{decoded_line}\n")
+            if len(decoded_line) < 6:
+                continue
 
-        # Pausa en kort stund för att inte överbelasta CPU:n
+            # for item in decoded_line:
+            #     print(f"Item: {item}")
+
+            # racer_name = decoded_line[1]
+            # lap_number = int(decoded_line[2])
+            # lap_time_str = decoded_line[3]
+            # best_lap_time_str = decoded_line[5]
+
+            # lap_time_ms = lap_time_str.split(',')
+            # lap_time_ms = int(lap_time_ms[0]) * 1000 + int(lap_time_ms[1])
+
+            # print(f"lap time ms: {lap_time_ms} ")
+
+            # lap_payload = {
+            #     'racer_name': racer_name,
+            #     'lap_number': lap_number,
+            #     'lap_time_ms': lap_time_ms,
+            # }
+
+            # print(f" LAPI> Sending Lap {lap_number} for {racer_name} ({lap_time_str})... ", end="")
+            
+            # response = supabase.table('laps').insert(lap_payload).execute()
+
+            # if response.data:
+            #     print("Sent!")
+            # else:
+            #     print(f"FAILED! Error: {response.error}")
+
         time.sleep(0.01)
 
 except serial.SerialException as e:
@@ -46,7 +84,6 @@ except serial.SerialException as e:
 except KeyboardInterrupt:
     print("\n[*] Programmet avslutades av användaren.")
 finally:
-    # Detta är mycket viktigt! Stäng alltid porten när du är klar.
     if ser and ser.is_open:
         ser.close()
         print(f"[*] Porten {PORT_NAME} har stängts.")

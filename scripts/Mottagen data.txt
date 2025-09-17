@@ -6,3 +6,5 @@ Mottagen data: $*****14330052#$1010314330053#$*****14330053#
 Mottagen data: $*****14340101#$1010314340102#
 
 $<P><NN><LL><HH><MM><mm><ss>#
+
+$LAP;<N*>;<P>;<LL>;<NAME>;<NICK>;<LAP_TIME>;<GAP>;<INTERVAL>#
