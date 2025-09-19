@@ -7,4 +7,12 @@ Mottagen data: $*****14340101#$1010314340102#
 
 $<P><NN><LL><HH><MM><mm><ss>#
 
-$LAP;<N*>;<P>;<LL>;<NAME>;<NICK>;<LAP_TIME>;<GAP>;<INTERVAL>#
+$LAP;<N*>;<P>;<L*>;<NAME>;<NICK>;<LAP_TIME>;<GAP>;<INTERVAL>#
+N* = Racer’s number
+P = Position
+L* = Laps
+NAME = Driver name
+NICK = Drivers nickname
+LAP_TIME = Lap time
+GAP = Time/Laps Gap from 1st position
+INTERVAL = Time/Laps difference with the driver ahead
