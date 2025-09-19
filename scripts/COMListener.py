@@ -104,8 +104,6 @@ def process_lap_data(line: str, supabase: Client):
             
             # response = supabase.table('laptimes').insert(lap_payload).execute()
 
-
-
             # if response.data:
             #     print("Sent!")
             # else:
@@ -115,13 +113,18 @@ def process_lap_data(line: str, supabase: Client):
                 "record": { "column1": "data from my remote script", "column2": 999 }
             }
 
-            print(f"🚀 Sending data to: {FUNCTION_URL}")
-            response = requests.post(FUNCTION_URL, headers=headers, data=json.dumps(data_to_insert))
+            if delta_time > 2000:
+                print(f"Sending data to: {FUNCTION_URL}")
+                response = requests.post(FUNCTION_URL, headers=headers, data=json.dumps(data_to_insert))
+                delta_time = 0
+            else:
+                data_to_insert["record"] = lap_payload
+                continue
 
             if response.ok:
-                print("✅ Success! Response:", response.json())
+                print("Success! Response:", response.json())
             else:
-                print("❌ Error:", response.status_code, response.text)
+                print("Error:", response.status_code, response.text)
 
         except (ValueError, IndexError) as e:
             print(f"\nWARNING: Could not parse segment: '$LAP{match}#'. Error: {e}")
