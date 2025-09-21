@@ -23,11 +23,12 @@ headers = {
 
 PORT_NAME = 'COM4'
 BAUD_RATE = 9600
+SEND_INTERVAL = 2 # Seconds
 
 
 try:
-    supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
-    print("Supabase client initialized.")
+    # supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+    print("Supabase client initialization skipped.")
         
 except Exception as e:
     print(f"ERROR: Could not initialize Supabase client: {e}")
@@ -54,7 +55,7 @@ def parse_time_to_ms(time_str: str) -> int:
         print(f"WARNING: Could not parse time string: '{time_str}'")
         return 0
 
-def process_lap_data(line: str, supabase: Client):
+def process_lap_data(line: str, data_buffer: list):
     # Use regex to find all lap data strings in the line.
     # The pattern '$LAP(.*?)\#' finds everything between '$LAP' and the next '#'.
     lap_data_matches = re.findall(r'\$LAP(.*?)\#', line)
@@ -100,31 +101,8 @@ def process_lap_data(line: str, supabase: Client):
                 'interval': interval,
             }
 
-            print(f" LAPI> Sending Lap {lap_number} for {racer_name} ({lap_time_str})... ", end="")
-            
-            # response = supabase.table('laptimes').insert(lap_payload).execute()
-
-            # if response.data:
-            #     print("Sent!")
-            # else:
-            #     print(f"FAILED! Error: {response.error}")
-
-            data_to_insert = {
-                "record": { "column1": "data from my remote script", "column2": 999 }
-            }
-
-            if delta_time > 2000:
-                print(f"Sending data to: {FUNCTION_URL}")
-                response = requests.post(FUNCTION_URL, headers=headers, data=json.dumps(data_to_insert))
-                delta_time = 0
-            else:
-                data_to_insert["record"] = lap_payload
-                continue
-
-            if response.ok:
-                print("Success! Response:", response.json())
-            else:
-                print("Error:", response.status_code, response.text)
+            print(f" LAPI> Buffering Lap {lap_number} for {racer_name} ({lap_time_str}).")
+            data_buffer.append(lap_payload)
 
         except (ValueError, IndexError) as e:
             print(f"\nWARNING: Could not parse segment: '$LAP{match}#'. Error: {e}")
@@ -145,48 +123,43 @@ try:
     )
     print(f"[*] Lyssnar på port {PORT_NAME} med hastighet {BAUD_RATE}...")
 
+    lap_data_buffer = []
+    last_send_time = time.time()
+
     while True:
+        current_time = time.time()
         if ser.in_waiting > 0:
             line = ser.readline()
+            try:
+                decoded_line = line.decode('utf-8', errors='ignore').strip()
+                if decoded_line:
+                    # print(f"Read line: {decoded_line}")
+                    process_lap_data(decoded_line, lap_data_buffer)
+            except Exception as e:
+                print(f"Error processing line: {e}")
 
-            decoded_line = line.decode('utf-8', errors='ignore').strip().split(';')
 
-            print(decoded_line)
-            
-            # with open("output.txt", "a") as f:
-            #     f.write(f"{decoded_line}\n")
-            if len(decoded_line) < 6:
-                continue
+        # Check if it's time to send the buffered data
+        if current_time - last_send_time >= SEND_INTERVAL and lap_data_buffer:
+            print(f"\nSending {len(lap_data_buffer)} records...")
+            try:
+                # Assuming your function expects a payload like: { "records": [...] }
+                data_to_send = {"laps": lap_data_buffer}
+                response = requests.post(FUNCTION_URL, headers=headers, data=json.dumps(data_to_send))
 
-            process_lap_data(line, supabase)
+                if response.ok:
+                    print("Success! Response:", response.text)
+                else:
+                    print("Error:", response.status_code, response.text)
+                
+                lap_data_buffer.clear() # Clear buffer after sending
+                last_send_time = current_time # Reset timer
 
-            # for item in decoded_line:
-            #     print(f"Item: {item}")
+            except requests.exceptions.RequestException as e:
+                print(f"HTTP Request failed: {e}")
+            except Exception as e:
+                print(f"An error occurred during send: {e}")
 
-            # racer_name = decoded_line[1]
-            # lap_number = int(decoded_line[2])
-            # lap_time_str = decoded_line[3]
-            # best_lap_time_str = decoded_line[5]
-
-            # lap_time_ms = lap_time_str.split(',')
-            # lap_time_ms = int(lap_time_ms[0]) * 1000 + int(lap_time_ms[1])
-
-            # print(f"lap time ms: {lap_time_ms} ")
-
-            # lap_payload = {
-            #     'racer_name': racer_name,
-            #     'lap_number': lap_number,
-            #     'lap_time_ms': lap_time_ms,
-            # }
-
-            # print(f" LAPI> Sending Lap {lap_number} for {racer_name} ({lap_time_str})... ", end="")
-            
-            # response = supabase.table('laps').insert(lap_payload).execute()
-
-            # if response.data:
-            #     print("Sent!")
-            # else:
-            #     print(f"FAILED! Error: {response.error}")
 
         time.sleep(0.01)
 
