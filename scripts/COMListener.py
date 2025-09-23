@@ -10,24 +10,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SUPABASE_URL = os.getenv('NEXT_PUBLIC_SUPABASE_URL')
-# SUPABASE_SERVICE_KEY = os.getenv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY')
-
-FUNCTION_URL = f"{SUPABASE_URL}/functions/v1/insert-laptimesdata"
-SECRET_KEY = os.environ.get("SCRIPT_SECRET_KEY")
-
-headers = {
-    "Authorization": f"Bearer {SECRET_KEY}",
-    "Content-Type": "application/json"
-}
+SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+SUPABASE_API_KEY = os.environ.get("SCRIPT_SECRET_KEY")
 
 PORT_NAME = 'COM4'
 BAUD_RATE = 9600
-SEND_INTERVAL = 2 # Seconds
+SEND_INTERVAL = 0.1
 
 
 try:
-    # supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+    supabase = create_client(SUPABASE_URL, SUPABASE_API_KEY)
     print("Supabase client initialization skipped.")
         
 except Exception as e:
@@ -91,14 +83,14 @@ def process_lap_data(line: str, data_buffer: list):
             lap_time_ms = parse_time_to_ms(lap_time_str)
 
             lap_payload = {
-                'driver_number': driver_number,
-                'position': position,
-                'racer_name': racer_name,
+                'car_id': driver_number,
+                # 'position': position,
+                # 'racer_name': racer_name,
                 #'racer_nick': racer_nick,
-                'lap_number': lap_number,
+                # 'lap_number': lap_number,
                 'lap_time_ms': lap_time_ms,
-                'gap': gap,
-                'interval': interval,
+                # 'gap': gap,
+                # 'interval': interval,
             }
 
             print(f" LAPI> Buffering Lap {lap_number} for {racer_name} ({lap_time_str}).")
@@ -125,6 +117,9 @@ try:
 
     lap_data_buffer = []
     last_send_time = time.time()
+    
+    table_name = "laptimes"
+    
 
     while True:
         current_time = time.time()
@@ -138,19 +133,20 @@ try:
             except Exception as e:
                 print(f"Error processing line: {e}")
 
-
         # Check if it's time to send the buffered data
         if current_time - last_send_time >= SEND_INTERVAL and lap_data_buffer:
             print(f"\nSending {len(lap_data_buffer)} records...")
             try:
                 # Assuming your function expects a payload like: { "records": [...] }
-                data_to_send = {"laps": lap_data_buffer}
-                response = requests.post(FUNCTION_URL, headers=headers, data=json.dumps(data_to_send))
+                # data_to_send = {"laps": lap_data_buffer}
+                # response = requests.post(FUNCTION_URL, headers=headers, data=json.dumps(data_to_send))
+                
+                data, count = supabase.table(table_name).insert(lap_data_buffer).execute()
 
-                if response.ok:
-                    print("Success! Response:", response.text)
-                else:
-                    print("Error:", response.status_code, response.text)
+                # if response.ok:
+                #     print("Success! Response:", response.text)
+                # else:
+                #     print("Error:", response.status_code, response.text)
                 
                 lap_data_buffer.clear() # Clear buffer after sending
                 last_send_time = current_time # Reset timer
