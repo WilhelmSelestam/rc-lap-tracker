@@ -5,9 +5,8 @@ import time
 import sys
 import re
 import requests
-from supabase import create_client, Client
+from supabase import create_client
 from dotenv import load_dotenv
-
 load_dotenv()
 
 SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
